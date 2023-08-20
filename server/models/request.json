@@ -1,0 +1,73 @@
+{
+  "name": "Request",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "acl": [],
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "nationalId": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true,
+      "default": "pending"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "service": {
+      "type": "belongsTo",
+      "model": "Service",
+      "foreignKey": "serviceId",
+      "options": {
+        "nestRemoting": true
+      },
+      "required": true
+    },
+    "citizen": {
+      "type": "belongsTo",
+      "model": "Citizen",
+      "foreignKey": "citizenId",
+      "options": {
+        "nestRemoting": true
+      },
+      "required": true
+    }
+  },
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "WRITE",
+      "property": "create",
+      "principalType": "ROLE",
+      "principalId": "CitizenRole",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "ALLOW"
+    }
+  ],
+  "methods": {}
+}
