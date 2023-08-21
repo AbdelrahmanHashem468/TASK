@@ -33,17 +33,6 @@ module.exports = function (Citizen) {
     });
     
   
-
-
-
-
-
-
-  ///////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-  
   Citizen.getRequests = function (options, callback) {
     const userId = options && options.accessToken && options.accessToken.userId;
 

@@ -67,6 +67,26 @@
       "principalType": "ROLE",
       "principalId": "$owner",
       "permission": "ALLOW"
+    },
+    {
+      "accessType": "WRITE",
+      "property": "updateAttributes",
+      "principalType": "ROLE",
+      "principalId": "$owner",
+      "permission": "DENY"
+    },
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "EmployeeRole",
+      "permission": "ALLOW"
+    },
+    {
+      "accessType": "WRITE",
+      "property": "updateAttributes",
+      "principalType": "ROLE",
+      "principalId": "EmployeeRole",
+      "permission": "ALLOW"
     }
   ],
   "methods": {}
