@@ -1,18 +1,132 @@
 version: '3.3'
 services:
-  mongo:
-    image: mongo:4.0-xenial
-    container_name: loopmongo_container
-    ports:
-      - '27017:27017'
+
+  mongodb-primary:
+    image: 'bitnami/mongodb:latest'
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
     volumes:
+      - 'mongodb_master_data:/bitnami'
       - ./mongo-data:/data/db
+    networks:    
+      - app-tier
+
+  mongodb-secondary:
+    image: 'bitnami/mongodb:latest'
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
+      - MONGODB_REPLICA_SET_MODE=secondary
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    networks:    
+      - app-tier
+
+  mongodb-arbiter:
+    image: 'bitnami/mongodb:latest'
+    depends_on:
+      - mongodb-primary
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
+      - MONGODB_REPLICA_SET_MODE=arbiter
+      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
+      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    networks:    
+      - app-tier
+      
   server:
     build: .
+    networks:    
+      - app-tier
     volumes:
       - /app/node_modules
       - .:/app
     ports:
       - '3000:3000'
     environment:
-      - MONGO_URL=mongodb://mongo:27017/Task
+      - MONGO_URL=mongodb://root:password123@mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/services?replicaSet=replicaset&authSource=admin
+    depends_on:
+      - mongodb-primary
+      - mongodb-secondary
+      - mongodb-arbiter
+    restart: unless-stopped
+    
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=jkgdfjkhaskldjskladfjhdjk    
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "http://elastic:IwWE9VnKw1pu2pedh8xKwMnQ@localhost:9200"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      # start_period: 120s
+    networks:
+      - app-tier
+      
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.0
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: jkgdfjkhaskldjskladfjhdjk
+      ELASTICSEARCH_SSL_VERIFY: "false"
+    networks:
+      - app-tier
+    ports:
+      - 5601:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  monstache:
+    image: rwynn/monstache:6.7.2
+    container_name: c-monstache
+    working_dir: /app
+    command: -f ./monstache.config.toml 
+    volumes:
+      - ./monstache.config.toml:/app/monstache.config.toml
+      # - ./plugin/plugin.so:/app/plugin.so
+    depends_on:
+      - elasticsearch
+        # condition: service_healthy
+      - mongodb-primary
+        # condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - app-tier
+    healthcheck:
+      test: "wget -q -O - http://localhost:8080/healthz"
+      interval: 10s
+      timeout: 30s
+      retries: 300
+    restart: unless-stopped
+
+volumes:
+  mongodb_master_data:
+    driver: local
+  esdata:
+
+networks:
+  app-tier:
+    driver: bridge
+  

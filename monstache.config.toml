@@ -1,0 +1,16 @@
+mongo-url = "mongodb://root:password123@mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/services?replicaSet=replicaset&authSource=admin"
+
+# mapper-plugin-path = "/app/plugin.so"
+
+elasticsearch-urls = ["http://elasticsearch:9200"]
+elasticsearch-user = "elastic"
+elasticsearch-password = "jkgdfjkhaskldjskladfjhdjk"
+# elasticsearch-max-seconds = 5
+# elasticsearch-max-conns = 6
+
+change-stream-namespaces = [""]
+
+verbose = false
+
+enable-http-server = true
+
