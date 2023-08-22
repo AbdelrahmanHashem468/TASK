@@ -3,6 +3,7 @@ services:
 
   mongodb-primary:
     image: 'bitnami/mongodb:latest'
+    container_name: mongodb-primary
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
       - MONGODB_REPLICA_SET_MODE=primary
@@ -16,6 +17,7 @@ services:
 
   mongodb-secondary:
     image: 'bitnami/mongodb:latest'
+    container_name: mongodb-secondary
     depends_on:
       - mongodb-primary
     environment:
@@ -30,6 +32,7 @@ services:
 
   mongodb-arbiter:
     image: 'bitnami/mongodb:latest'
+    container_name: mongodb-arbiter
     depends_on:
       - mongodb-primary
     environment:
@@ -44,6 +47,7 @@ services:
       
   server:
     build: .
+    container_name: loopback_server
     networks:    
       - app-tier
     volumes:
@@ -53,12 +57,36 @@ services:
       - '3000:3000'
     environment:
       - MONGO_URL=mongodb://root:password123@mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/services?replicaSet=replicaset&authSource=admin
+      - RABBIT_URL=amqp://rabbitmq
     depends_on:
       - mongodb-primary
       - mongodb-secondary
       - mongodb-arbiter
+      - rabbitmq
     restart: unless-stopped
-    
+
+  rabbitmq:
+    image: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:    
+      - app-tier
+
+  notification:
+    build:
+      dockerfile: Dockerfile
+      context: ./notification
+    container_name: notification
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+    depends_on:
+      - rabbitmq
+    networks:    
+      - app-tier
+    restart: unless-stopped
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     container_name: elasticsearch
@@ -84,6 +112,7 @@ services:
       
   kibana:
     image: docker.elastic.co/kibana/kibana:7.10.0
+    container_name: kibana
     environment:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
       ELASTICSEARCH_USERNAME: elastic
@@ -129,4 +158,3 @@ volumes:
 networks:
   app-tier:
     driver: bridge
-  

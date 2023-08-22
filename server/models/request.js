@@ -1,5 +1,6 @@
 'use strict';
 const _ = require('lodash');
+const Producer = require('../services/producer');
 
 module.exports = function (Request) {
   Request.beforeRemote('create', function (ctx, instance, next) {
@@ -24,7 +25,7 @@ module.exports = function (Request) {
   });
 
   Request.updateStatus = function (id, status, callback) {
-    Request.findById(id, function (err, request) {
+    Request.findById(id, async function  (err, request) {
       if (err) return callback(err);
       if (!request) {
         const error = new Error('Request not found');
@@ -32,12 +33,12 @@ module.exports = function (Request) {
         return callback(error);
       }
 
-      if(request.status!=='pending')
-      {
-        const error = new Error('Canot update this request');
-        error.statusCode = 401;
-        return callback(error);
-      }
+      // if(request.status!=='pending')
+      // {
+      //   const error = new Error('Canot update this request');
+      //   error.statusCode = 401;
+      //   return callback(error);
+      // }
 
 
       request.status = status;
@@ -45,8 +46,15 @@ module.exports = function (Request) {
         if (err) return callback(err);
         callback(null, updatedRequest);
       });
-
+      const Citizen = Request.app.models.Citizen; 
+      const citizen = await Citizen.findById(request.citizenId)
+      console.log(citizen);
       // send notification 
+      const producer = new Producer();
+      producer.publishMessage('mail',{
+        email:citizen.email,
+        status:request.status
+      });
 
     });
   };

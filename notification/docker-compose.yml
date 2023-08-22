@@ -1,0 +1,28 @@
+
+version: '3.3'
+services:
+  rabbitmq:
+    image: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:    
+      - app-tier
+
+  notification:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: notification
+    environment:
+      - RABBIT_URL=amqp://rabbitmq
+    depends_on:
+      - rabbitmq
+    networks:    
+      - app-tier
+    restart: unless-stopped
+
+networks:
+  app-tier:
+    driver: bridge
