@@ -63,14 +63,7 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "WRITE",
-      "property": "updateAttributes",
-      "principalType": "ROLE",
-      "principalId": "$owner",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "*",
+      "accessType": "READ",
       "principalType": "ROLE",
       "principalId": "$owner",
       "permission": "ALLOW"
@@ -82,12 +75,13 @@
       "permission": "ALLOW"
     },
     {
-      "accessType": "WRITE",
-      "property": "updateAttributes",
+      "accessType": "EXECUTE",
       "principalType": "ROLE",
       "principalId": "EmployeeRole",
-      "permission": "ALLOW"
+      "permission": "ALLOW",
+      "property": "updateStatus"
     }
+    
   ],
   "methods": {}
 }

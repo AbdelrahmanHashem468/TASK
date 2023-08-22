@@ -22,4 +22,44 @@ module.exports = function (Request) {
 
     next();
   });
+
+  Request.updateStatus = function (id, status, callback) {
+    Request.findById(id, function (err, request) {
+      if (err) return callback(err);
+      if (!request) {
+        const error = new Error('Request not found');
+        error.statusCode = 404;
+        return callback(error);
+      }
+
+      if(request.status!=='pending')
+      {
+        const error = new Error('Canot update this request');
+        error.statusCode = 401;
+        return callback(error);
+      }
+
+
+      request.status = status;
+      request.save(function (err, updatedRequest) {
+        if (err) return callback(err);
+        callback(null, updatedRequest);
+      });
+
+      // send notification 
+
+    });
+  };
+
+  Request.remoteMethod('updateStatus', {
+    http: {
+      path: '/:id/updateStatus',
+      verb: 'patch',
+    },
+    accepts: [
+      { arg: 'id', type: 'string', required: true },
+      { arg: 'status', type: 'string', required: true },
+    ],
+    returns: { arg: 'data', type: 'object', root: true },
+  });
 };
