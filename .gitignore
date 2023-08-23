@@ -19,3 +19,5 @@ node_modules
 npm-debug.log
 mongo-data
 notification/.env
+.env
+docker.env

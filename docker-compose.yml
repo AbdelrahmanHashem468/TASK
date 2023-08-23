@@ -7,8 +7,8 @@ services:
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
       - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - MONGODB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_REPLICA_SET_KEY=${MONGODB_REPLICA_KEY}
     volumes:
       - 'mongodb_master_data:/bitnami'
       - ./mongo-data:/data/db
@@ -24,9 +24,9 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=${MONGODB_PORT_NUMBER}
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_REPLICA_SET_KEY=${MONGODB_REPLICA_KEY}
     networks:    
       - app-tier
 
@@ -39,9 +39,9 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
       - MONGODB_REPLICA_SET_MODE=arbiter
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=27017
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - MONGODB_INITIAL_PRIMARY_PORT_NUMBER=${MONGODB_PORT_NUMBER}
+      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_REPLICA_SET_KEY=${MONGODB_REPLICA_KEY}
     networks:    
       - app-tier
       
@@ -56,8 +56,8 @@ services:
     ports:
       - '3000:3000'
     environment:
-      - MONGO_URL=mongodb://root:password123@mongodb-primary:27017,mongodb-secondary:27017,mongodb-arbiter:27017/services?replicaSet=replicaset&authSource=admin
-      - RABBIT_URL=amqp://rabbitmq
+      - MONGO_URL=${MONGO_URL}
+      - RABBIT_URL=${RABBIT_URL}
     depends_on:
       - mongodb-primary
       - mongodb-secondary
@@ -80,7 +80,7 @@ services:
       context: ./notification
     container_name: notification
     environment:
-      - RABBIT_URL=amqp://rabbitmq
+      - RABBIT_URL=${RABBIT_URL}
     depends_on:
       - rabbitmq
     networks:    
@@ -93,8 +93,8 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
-      - ELASTIC_USERNAME=elastic
-      - ELASTIC_PASSWORD=jkgdfjkhaskldjskladfjhdjk    
+      - ELASTIC_USERNAME=${ELASTIC_USERNAME}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     expose:
       - 9200
     ports:
@@ -115,9 +115,9 @@ services:
     container_name: kibana
     environment:
       ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
-      ELASTICSEARCH_USERNAME: elastic
-      ELASTICSEARCH_PASSWORD: jkgdfjkhaskldjskladfjhdjk
-      ELASTICSEARCH_SSL_VERIFY: "false"
+      ELASTICSEARCH_USERNAME: ${ELASTIC_USERNAME}
+      ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+      ELASTICSEARCH_SSL_VERIFY: "false"  
     networks:
       - app-tier
     ports:

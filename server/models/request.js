@@ -3,18 +3,35 @@ const _ = require('lodash');
 const Producer = require('../services/producer');
 
 module.exports = function (Request) {
+  Request.validatesInclusionOf('status', {
+    in: ['pending', 'accepted', 'rejected'],
+    message: 'Status must be one of: pending, accepted, rejected',
+  });
+
+  Request.validatesLengthOf('nationalId', {min: 14, max:14,message: {min: 'nationa lId is not  valid',max: 'nationalId is not valid'}});
+
+  Request.validateNumber = function (err) {
+    if (!/^[0-9]+$/.test(this.nationalId)) {
+      err();
+    }
+  };
+  
+  Request.validate('nationalId', Request.validateNumber, {
+    message: 'National ID must be a valid number.'
+  });
+
   Request.beforeRemote('create', function (ctx, instance, next) {
     const data = ctx.req.body;
     const userId = _.get(ctx, 'req.accessToken.userId');
 
     if (!userId) {
-      const err = new Error('"You are not authenticated!');
+      const err = new Error('You are not authenticated!');
       err.statusCode = 400;
       return next(err);
     }
 
     if (!data.serviceId) {
-      const err = new Error('"serviceId" is required.');
+      const err = new Error('serviceId is required.');
       err.statusCode = 400;
       return next(err);
     }
@@ -25,7 +42,7 @@ module.exports = function (Request) {
   });
 
   Request.updateStatus = function (id, status, callback) {
-    Request.findById(id, async function  (err, request) {
+    Request.findById(id, async function (err, request) {
       if (err) return callback(err);
       if (!request) {
         const error = new Error('Request not found');
@@ -42,19 +59,24 @@ module.exports = function (Request) {
 
 
       request.status = status;
-      request.save(function (err, updatedRequest) {
+      request.save(async function (err, updatedRequest) {
         if (err) return callback(err);
+
+        const Citizen = Request.app.models.Citizen;
+        const citizen = await Citizen.findById(request.citizenId)
+        if (citizen) {
+          // send notification 
+          const producer = new Producer();
+          producer.publishMessage('mail', {
+            email: citizen.email,
+            status: request.status
+          });
+        }
+
         callback(null, updatedRequest);
       });
-      const Citizen = Request.app.models.Citizen; 
-      const citizen = await Citizen.findById(request.citizenId)
-      console.log(citizen);
-      // send notification 
-      const producer = new Producer();
-      producer.publishMessage('mail',{
-        email:citizen.email,
-        status:request.status
-      });
+
+
 
     });
   };
@@ -70,4 +92,5 @@ module.exports = function (Request) {
     ],
     returns: { arg: 'data', type: 'object', root: true },
   });
+
 };
