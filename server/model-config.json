@@ -35,11 +35,7 @@
     "dataSource": "db",
     "public": true
   },
-  "Service": {
-    "dataSource": "db",
-    "public": true
-  },
-  "Request": {
+  "RenewID": {
     "dataSource": "db",
     "public": true
   },

@@ -1,5 +1,5 @@
 {
-  "name": "Request",
+  "name": "RenewID",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -23,15 +23,6 @@
   },
   "validations": [],
   "relations": {
-    "service": {
-      "type": "belongsTo",
-      "model": "Service",
-      "foreignKey": "serviceId",
-      "options": {
-        "nestRemoting": true
-      },
-      "required": true
-    },
     "citizen": {
       "type": "belongsTo",
       "model": "Citizen",
@@ -80,8 +71,14 @@
       "principalId": "EmployeeRole",
       "permission": "ALLOW",
       "property": "updateStatus"
+    },
+    {
+      "accessType": "EXECUTE",
+      "principalType": "ROLE",
+      "principalId": "CitizenRole",
+      "permission": "ALLOW",
+      "property": "updateData"
     }
-    
   ],
   "methods": {}
 }

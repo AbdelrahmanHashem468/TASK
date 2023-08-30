@@ -54,7 +54,7 @@ module.exports = function (Citizen) {
       return callback(error);
     }
 
-    Citizen.app.models.Request.find({ where: { citizenId: userId } }, function (err, requests) {
+    Citizen.app.models.RenewID.find({ where: { citizenId: userId } }, function (err, requests) {
       if (err) return callback(err);
       callback(null, requests);
     });

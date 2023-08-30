@@ -16,11 +16,13 @@
     "cors": "^2.5.2",
     "dotenv": "^16.3.1",
     "helmet": "^3.10.0",
+    "ioredis": "^5.3.2",
     "lodash": "^4.17.21",
     "loopback": "^3.22.0",
     "loopback-boot": "^2.6.5",
     "loopback-component-explorer": "^6.2.0",
     "loopback-connector-mongodb": "^4.2.0",
+    "loopback-context": "^3.5.2",
     "serve-favicon": "^2.0.1",
     "strong-error-handler": "^4.0.0"
   },
