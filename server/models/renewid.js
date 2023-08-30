@@ -93,7 +93,6 @@ module.exports = function (RenewID) {
 
   RenewID.updateData = async function (id, ctx) {
     try {
-      // console.log(ctx);
       const userId = _.get(ctx, 'req.accessToken.userId');
       const renewid = await RenewID.findById(id);
       console.log(userId);
