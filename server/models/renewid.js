@@ -91,20 +91,18 @@ module.exports = function (RenewID) {
     returns: { arg: 'data', type: 'object', root: true },
   });
 
-  RenewID.updateData = async function (id, ctx) {
+  RenewID.updateData = async function (id, ctx,requestBody) {
     try {
       const userId = _.get(ctx, 'req.accessToken.userId');
       const renewid = await RenewID.findById(id);
-      console.log(userId);
-      console.log(renewid.citizenId);
+
 
       if (userId.toString() !== renewid.citizenId.toString()) {
         const err = new Error('You are not authorized to update this request!');
         err.statusCode = 401; // Use 401 for unauthorized access
         throw err;
       }
-      const data = ctx.req.body;
-
+      const data = requestBody;
 
       if (renewid.status !== 'rejected') {
         const err = new Error('You cannot update this request!');
@@ -138,7 +136,8 @@ module.exports = function (RenewID) {
     },
     accepts: [
       { arg: 'id', type: 'string', required: true },
-      { arg: 'ctx', type: 'object', http: { source: 'context' } }
+      { arg: 'ctx', type: 'object', http: { source: 'context' } },
+      { arg: 'requestBody', type: 'object', http: { source: 'request.body' } }
     ],
     returns: { arg: 'data', type: 'object', root: true },
   });
